@@ -1,7 +1,7 @@
-import PSGC from "./psgc";
+import PSGC from "./src/psgc";
 
 const getRegions = async () => {
-    const filePath = "./PSGC-April-2024-Publication-Datafile.xlsx";
+    const filePath = "./data/PSGC-April-2024-Publication-Datafile.xlsx";
 
     const psgc = PSGC.instance;
 
