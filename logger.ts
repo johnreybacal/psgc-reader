@@ -5,11 +5,11 @@ export default class Logger {
         this.isEnabled = isEnabled;
     }
 
-    info(...args) {
+    public info(...args) {
         if (this.isEnabled) console.info(new Date(), ...args);
     }
 
-    error(...args) {
+    public error(...args) {
         if (this.isEnabled) console.error(new Date(), ...args);
     }
 }

@@ -39,16 +39,16 @@ const BARANGAY = "Bgy";
 export default class PSGC {
     static #instance: PSGC;
 
-    logger: Logger;
+    private logger: Logger;
 
-    locations: LocationRecord[] = [];
+    public locations: LocationRecord[] = [];
 
-    regions: LocationRecord[] = [];
-    provinces: LocationRecord[] = [];
-    cities: LocationRecord[] = [];
-    municipalities: LocationRecord[] = [];
-    subMunicipalities: LocationRecord[] = [];
-    barangays: LocationRecord[] = [];
+    public regions: LocationRecord[] = [];
+    public provinces: LocationRecord[] = [];
+    public cities: LocationRecord[] = [];
+    public municipalities: LocationRecord[] = [];
+    public subMunicipalities: LocationRecord[] = [];
+    public barangays: LocationRecord[] = [];
 
     private constructor() {}
 
@@ -90,7 +90,7 @@ export default class PSGC {
         }
     }
 
-    filterGeoLevel() {
+    public filterGeoLevel() {
         this.logger.info("Start filtering by geographic level");
 
         this.locations.forEach((location) => {
@@ -144,7 +144,7 @@ export default class PSGC {
         return this;
     }
 
-    clearLocations() {
+    public clearLocations() {
         this.locations = [];
     }
 }
