@@ -11,10 +11,10 @@ const getRegions = async () => {
 
     psgc.filterGeoLevel();
 
-    console.log(psgc.regions);
+    console.log(psgc.filteredPSGC.regions);
 
     console.log(
-        psgc.provinces.filter((location) =>
+        psgc.filteredPSGC.provinces.filter((location) =>
             location.code.toString().startsWith("01")
         )
     );

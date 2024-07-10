@@ -1,18 +1,6 @@
 import readXlsxFile from "read-excel-file/node";
 import Logger from "./logger";
-
-interface LocationRecord {
-    code: string;
-    name: string;
-    geoLevel: string;
-    class: string;
-    oldCode: string;
-    oldName: string;
-    incomeClass: string;
-    urbanRural: string;
-    population: number;
-    status: string;
-}
+import { FilteredPSGC, PSGCRecord, Tables } from "./types";
 
 const DEFAULT_SHEET_NAME = "PSGC";
 const mapping = {
@@ -37,114 +25,116 @@ const SUB_MUNICIPALITY = "SubMun";
 const BARANGAY = "Bgy";
 
 export default class PSGC {
-    static #instance: PSGC;
+    static _instance: PSGC;
 
-    private logger: Logger;
+    private _logger: Logger;
 
-    public locations: LocationRecord[] = [];
-
-    public regions: LocationRecord[] = [];
-    public provinces: LocationRecord[] = [];
-    public cities: LocationRecord[] = [];
-    public municipalities: LocationRecord[] = [];
-    public subMunicipalities: LocationRecord[] = [];
-    public barangays: LocationRecord[] = [];
+    private _locations: PSGCRecord[] = [];
+    private _filteredPSGC: FilteredPSGC = new FilteredPSGC();
+    private _tables: Tables;
 
     private constructor() {}
 
     public static get instance(): PSGC {
-        if (!PSGC.#instance) {
-            PSGC.#instance = new PSGC();
-            PSGC.#instance.logger = new Logger();
+        if (!PSGC._instance) {
+            PSGC._instance = new PSGC();
+            PSGC._instance._logger = new Logger();
         }
 
-        return PSGC.#instance;
+        return PSGC._instance;
+    }
+
+    public get locations() {
+        return this._locations;
+    }
+    public get filteredPSGC() {
+        return this._filteredPSGC;
     }
 
     public enableLogger() {
-        this.logger.setEnabled(true);
+        this._logger.setEnabled(true);
         return this;
     }
 
     public disableLogger() {
-        this.logger.setEnabled(false);
+        this._logger.setEnabled(false);
         return this;
     }
 
     public async readExcel(filePath: string, sheetName = DEFAULT_SHEET_NAME) {
         try {
-            this.logger.info(`Start reading: ${filePath}`);
+            this._logger.info(`Start reading: ${filePath}`);
 
-            const sheet = await readXlsxFile<LocationRecord>(filePath, {
+            const sheet = await readXlsxFile<PSGCRecord>(filePath, {
                 sheet: sheetName,
                 map: mapping,
             });
 
-            this.locations = sheet.rows as LocationRecord[];
+            this._locations = sheet.rows as PSGCRecord[];
 
-            this.logger.info("Read complete");
+            this._logger.info("Read complete");
 
             return this;
         } catch (error) {
-            this.logger.error(error);
+            this._logger.error(error);
         }
     }
 
     public filterGeoLevel() {
-        this.logger.info("Start filtering by geographic level");
+        this._logger.info("Start filtering by geographic level");
 
-        this.locations.forEach((location) => {
+        this._locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
-                    this.regions.push(location);
+                    this._filteredPSGC.regions.push(location);
                     break;
                 case PROVINCE:
-                    this.provinces.push(location);
+                    this._filteredPSGC.provinces.push(location);
                     break;
                 case CITY:
-                    this.cities.push(location);
+                    this._filteredPSGC.cities.push(location);
                     break;
                 case MUNICIPALITY:
-                    this.municipalities.push(location);
+                    this._filteredPSGC.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
-                    this.subMunicipalities.push(location);
+                    this._filteredPSGC.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
-                    this.barangays.push(location);
+                    this._filteredPSGC.barangays.push(location);
                     break;
                 default:
                     // Some records does not have geo level
-                    this.logger.info("Missing geographic level:", location);
+                    this._logger.info("Missing geographic level:", location);
 
                     // We'll determine the geo level using it's code
                     location.code = String(location.code);
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
-                        this.regions.push(location);
+                        this._filteredPSGC.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
-                        this.provinces.push(location);
+                        this._filteredPSGC.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
-                        this.cities.push(location);
+                        this._filteredPSGC.cities.push(location);
                     }
                     // Is barangay level
                     else {
-                        this.barangays.push(location);
+                        this._filteredPSGC.barangays.push(location);
                     }
                     break;
             }
         });
 
-        this.logger.info("Filter completed");
+        this._logger.info("Filter completed");
         return this;
     }
 
     public clearLocations() {
-        this.locations = [];
+        this._locations = [];
     }
 }
