@@ -1,4 +1,5 @@
 import readXlsxFile from "read-excel-file/node";
+import Logger from "./logger";
 
 interface LocationRecord {
     code: string;
@@ -38,6 +39,8 @@ const BARANGAY = "Bgy";
 export default class PSGC {
     static #instance: PSGC;
 
+    logger: Logger;
+
     locations: LocationRecord[] = [];
 
     regions: LocationRecord[] = [];
@@ -52,22 +55,44 @@ export default class PSGC {
     public static get instance(): PSGC {
         if (!PSGC.#instance) {
             PSGC.#instance = new PSGC();
+            PSGC.#instance.logger = new Logger();
         }
 
         return PSGC.#instance;
     }
 
-    async readExcel(filePath: string, sheetName = DEFAULT_SHEET_NAME) {
-        const sheet = await readXlsxFile<LocationRecord>(filePath, {
-            sheet: sheetName,
-            map: mapping,
-        });
-
-        this.locations = sheet.rows as LocationRecord[];
+    public enableLogger() {
+        this.logger.setEnabled(true);
         return this;
     }
 
+    public disableLogger() {
+        this.logger.setEnabled(false);
+        return this;
+    }
+
+    public async readExcel(filePath: string, sheetName = DEFAULT_SHEET_NAME) {
+        try {
+            this.logger.info(`Start reading: ${filePath}`);
+
+            const sheet = await readXlsxFile<LocationRecord>(filePath, {
+                sheet: sheetName,
+                map: mapping,
+            });
+
+            this.locations = sheet.rows as LocationRecord[];
+
+            this.logger.info("Read complete");
+
+            return this;
+        } catch (error) {
+            this.logger.error(error);
+        }
+    }
+
     filterGeoLevel() {
+        this.logger.info("Start filtering by geographic level");
+
         this.locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
@@ -90,9 +115,10 @@ export default class PSGC {
                     break;
                 default:
                     // Some records does not have geo level
+                    this.logger.info("Missing geographic level:", location);
+
                     // We'll determine the geo level using it's code
                     location.code = String(location.code);
-                    console.log(location);
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
@@ -114,6 +140,7 @@ export default class PSGC {
             }
         });
 
+        this.logger.info("Filter completed");
         return this;
     }
 

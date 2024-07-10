@@ -3,11 +3,21 @@ import PSGC from "./psgc";
 const getRegions = async () => {
     const filePath = "./PSGC-April-2024-Publication-Datafile.xlsx";
 
-    await PSGC.instance.readExcel(filePath);
+    const psgc = PSGC.instance;
 
-    const regions = PSGC.instance.filterGeoLevel().regions;
+    // psgc.enableLogger();
 
-    console.log(regions);
+    await psgc.readExcel(filePath);
+
+    psgc.filterGeoLevel();
+
+    console.log(psgc.regions);
+
+    console.log(
+        psgc.provinces.filter((location) =>
+            location.code.toString().startsWith("01")
+        )
+    );
 };
 
 getRegions();
