@@ -5,19 +5,15 @@ const getRegions = async () => {
 
     const psgc = PSGC.instance;
 
-    // psgc.enableLogger();
+    psgc.enableLogger();
 
     await psgc.readExcel(filePath);
 
-    psgc.filterGeoLevel();
+    psgc.filterGeoLevel().associateIntoTables();
 
-    console.log(psgc.filteredPSGC.regions);
+    console.log(psgc.tables.regions);
 
-    console.log(
-        psgc.filteredPSGC.provinces.filter((location) =>
-            location.code.toString().startsWith("01")
-        )
-    );
+    console.log(psgc.tables.provinces);
 };
 
 getRegions();

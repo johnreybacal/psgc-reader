@@ -1,6 +1,14 @@
 import readXlsxFile from "read-excel-file/node";
 import Logger from "./logger";
-import { FilteredPSGC, PSGCRecord, Tables } from "./types";
+import {
+    Barangay,
+    City,
+    FilteredPSGC,
+    Province,
+    PSGCRecord,
+    Region,
+    Tables,
+} from "./types";
 
 const DEFAULT_SHEET_NAME = "PSGC";
 const mapping = {
@@ -31,7 +39,7 @@ export default class PSGC {
 
     private _locations: PSGCRecord[] = [];
     private _filteredPSGC: FilteredPSGC = new FilteredPSGC();
-    private _tables: Tables;
+    private _tables: Tables = new Tables();
 
     private constructor() {}
 
@@ -49,6 +57,9 @@ export default class PSGC {
     }
     public get filteredPSGC() {
         return this._filteredPSGC;
+    }
+    public get tables() {
+        return this._tables;
     }
 
     public enableLogger() {
@@ -83,25 +94,26 @@ export default class PSGC {
     public filterGeoLevel() {
         this._logger.info("Start filtering by geographic level");
 
+        const psgc = this._filteredPSGC;
         this._locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
-                    this._filteredPSGC.regions.push(location);
+                    psgc.regions.push(location);
                     break;
                 case PROVINCE:
-                    this._filteredPSGC.provinces.push(location);
+                    psgc.provinces.push(location);
                     break;
                 case CITY:
-                    this._filteredPSGC.cities.push(location);
+                    psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
-                    this._filteredPSGC.municipalities.push(location);
+                    psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
-                    this._filteredPSGC.subMunicipalities.push(location);
+                    psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
-                    this._filteredPSGC.barangays.push(location);
+                    psgc.barangays.push(location);
                     break;
                 default:
                     // Some records does not have geo level
@@ -112,19 +124,19 @@ export default class PSGC {
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
-                        this._filteredPSGC.regions.push(location);
+                        psgc.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
-                        this._filteredPSGC.provinces.push(location);
+                        psgc.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
-                        this._filteredPSGC.cities.push(location);
+                        psgc.cities.push(location);
                     }
                     // Is barangay level
                     else {
-                        this._filteredPSGC.barangays.push(location);
+                        psgc.barangays.push(location);
                     }
                     break;
             }
@@ -132,6 +144,80 @@ export default class PSGC {
 
         this._logger.info("Filter completed");
         return this;
+    }
+
+    public associateIntoTables() {
+        this._logger.info("Start associating PSGC to tables");
+        const psgc = this._filteredPSGC;
+
+        this._logger.info("Regions...");
+        psgc.regions.forEach((location) => {
+            const region = new Region();
+            region.code = location.code;
+            region.name = location.name;
+
+            this._tables.regions.push(region);
+        });
+
+        this._logger.info("Provinces...");
+        psgc.provinces.forEach((location) => {
+            const province = new Province();
+            province.code = location.code;
+            province.name = location.name;
+
+            province.setJurisdictionCode();
+
+            this._tables.provinces.push(province);
+        });
+
+        this._logger.info("Cities:");
+        this._logger.info("\tCity...");
+        psgc.cities.forEach((location) => {
+            const city = new City();
+            city.code = location.code;
+            city.name = location.name;
+            city.type = location.geoLevel;
+            city.cityClass = location.class;
+
+            city.setJurisdictionCode();
+
+            this._tables.cities.push(city);
+        });
+
+        this._logger.info("\tMunicipality...");
+        psgc.municipalities.forEach((location) => {
+            const municipality = new City();
+            municipality.name = location.name;
+            municipality.code = location.code;
+
+            municipality.setJurisdictionCode();
+
+            this._tables.cities.push(municipality);
+        });
+
+        this._logger.info("\tSub-Municipality...");
+        psgc.subMunicipalities.forEach((location) => {
+            const subMunicipality = new City();
+            subMunicipality.name = location.name;
+            subMunicipality.code = location.code;
+
+            subMunicipality.setJurisdictionCode();
+
+            this._tables.cities.push(subMunicipality);
+        });
+
+        this._logger.info("Barangays...");
+        psgc.barangays.forEach((location) => {
+            const barangay = new Barangay();
+            barangay.name = location.name;
+            barangay.code = location.code;
+
+            barangay.setJurisdictionCode();
+
+            this._tables.barangays.push(barangay);
+        });
+
+        this._logger.info("Association completed");
     }
 
     public clearLocations() {
