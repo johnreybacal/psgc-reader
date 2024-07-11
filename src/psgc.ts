@@ -1,14 +1,11 @@
 import readXlsxFile from "read-excel-file/node";
 import Logger from "./logger";
-import {
-    Barangay,
-    City,
-    FilteredPSGC,
-    Province,
-    PSGCRecord,
-    Region,
-    Tables,
-} from "./types";
+import Barangay from "./types/barangay";
+import City from "./types/city";
+import Province from "./types/province";
+import { FilteredPSGC, PSGCRecord } from "./types/psgc";
+import Region from "./types/region";
+import { Tables } from "./types/tables";
 
 const DEFAULT_SHEET_NAME = "PSGC";
 const mapping = {
