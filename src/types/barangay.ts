@@ -6,6 +6,6 @@ export default class Barangay {
     code: string;
     name: string;
     region: Region;
-    province: Province;
+    province?: Province;
     city: City;
 }

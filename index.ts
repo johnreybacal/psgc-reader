@@ -9,7 +9,7 @@ const getRegions = async () => {
 
     await psgc.readExcel(filePath);
 
-    psgc.filterGeoLevel();
+    psgc.filterGeoLevel().associateLocations();
 
     console.log(psgc.tables.regions);
 

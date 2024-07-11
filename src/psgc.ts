@@ -183,6 +183,58 @@ export default class PSGC {
         return this;
     }
 
+    public associateLocations() {
+        const tables = this.tables;
+
+        const getRegion = (code: string) => {
+            return tables.regions.filter((region) =>
+                region.code.startsWith(code.substring(0, 2))
+            )[0];
+        };
+        const getProvince = (code: string, city: City) => {
+            if (!(city.type === "City" && city.cityClass === "HUC")) {
+                return tables.provinces.filter((province) =>
+                    province.code.startsWith(code.substring(0, 5))
+                )[0];
+            } else {
+                return undefined;
+            }
+        };
+        tables.regions.forEach((region) => {
+            region.provinces = tables.provinces.filter(
+                (province) =>
+                    province.code.substring(0, 2) ===
+                    region.code.substring(0, 2)
+            );
+        });
+        tables.provinces.forEach((province) => {
+            province.region = getRegion(province.code);
+
+            province.cities = tables.cities.filter(
+                (city) =>
+                    city.code.substring(0, 5) === province.code.substring(0, 5)
+            );
+        });
+        tables.cities.forEach((city) => {
+            city.region = getRegion(city.code);
+
+            city.province = getProvince(city.code, city);
+
+            city.barangays = tables.barangays.filter(
+                (barangay) =>
+                    barangay.code.substring(0, 7) === city.code.substring(0, 7)
+            );
+        });
+        tables.barangays.forEach((barangay) => {
+            barangay.region = getRegion(barangay.code);
+            barangay.city = tables.cities.filter((city) =>
+                city.barangays.includes(barangay)
+            )[0];
+
+            barangay.province = getProvince(barangay.code, barangay.city);
+        });
+    }
+
     private addRegion(location: PSGCRecord) {
         const region = new Region();
         region.code = location.code;

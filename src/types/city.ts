@@ -12,6 +12,6 @@ export default class City {
     type: string;
     cityClass: string;
     region: Region;
-    province: Province;
+    province?: Province;
     barangays: Barangay[] = [];
 }
