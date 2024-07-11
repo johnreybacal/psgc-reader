@@ -8,18 +8,51 @@ import Region from "./types/region";
 import { Tables } from "./types/tables";
 
 const DEFAULT_SHEET_NAME = "PSGC";
-const mapping = {
-    "10-digit PSGC": "code",
-    Name: "name",
-    "Correspondence Code": "oldCode",
-    "Geographic Level": "geoLevel",
-    "Old names": "oldName",
-    "City Class": "class",
-    "Income\nClassification": "incomeClass",
-    "Urban / Rural\n(based on 2020 CPH)": "urbanRural",
-    "2020 Population": "population",
-    "": "remarks",
-    Status: "status",
+const schema = {
+    "10-digit PSGC": {
+        prop: "code",
+        type: String,
+    },
+    Name: {
+        prop: "name",
+        type: String,
+    },
+    "Correspondence Code": {
+        prop: "oldCode",
+        type: String,
+    },
+    "Geographic Level": {
+        prop: "geoLevel",
+        type: String,
+    },
+    "Old names": {
+        prop: "oldName",
+        type: String,
+    },
+    "City Class": {
+        prop: "class",
+        type: String,
+    },
+    "Income\nClassification": {
+        prop: "incomeClass",
+        type: String,
+    },
+    "Urban / Rural\n(based on 2020 CPH)": {
+        prop: "urbanRural",
+        type: String,
+    },
+    "2020 Population": {
+        prop: "population",
+        type: Number,
+    },
+    "": {
+        prop: "remarks",
+        type: String,
+    },
+    Status: {
+        prop: "status",
+        type: String,
+    },
 };
 
 const REGION = "Reg";
@@ -69,16 +102,16 @@ export default class PSGC {
         return this;
     }
 
-    public async readExcel(filePath: string, sheetName = DEFAULT_SHEET_NAME) {
+    public async readExcel(filePath: string, sheet = DEFAULT_SHEET_NAME) {
         try {
             this.#logger.info(`Start reading: ${filePath}`);
 
-            const sheet = await readXlsxFile<PSGCRecord>(filePath, {
-                sheet: sheetName,
-                map: mapping,
+            const workSheet = await readXlsxFile(filePath, {
+                sheet,
+                schema,
             });
 
-            this.#locations = sheet.rows as PSGCRecord[];
+            this.#locations = workSheet.rows as unknown[] as PSGCRecord[];
 
             this.#logger.info("Read complete");
 
