@@ -1,5 +1,6 @@
 import Barangay from "./barangay";
 import Province from "./province";
+import Region from "./region";
 
 /**
  * City
@@ -10,6 +11,7 @@ export default class City {
     name: string;
     type: string;
     cityClass: string;
+    region: Region;
     province: Province;
     barangays: Barangay[] = [];
 }
