@@ -92,24 +92,31 @@ export default class PSGC {
         this.#logger.info("Start filtering by geographic level");
 
         const psgc = this.#filteredPSGC;
+        const tables = this.#tables;
         this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
+                    this.addRegion(location);
                     psgc.regions.push(location);
                     break;
                 case PROVINCE:
+                    this.addProvince(location);
                     psgc.provinces.push(location);
                     break;
                 case CITY:
+                    this.addCity(location);
                     psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
+                    this.addCity(location);
                     psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
+                    this.addCity(location);
                     psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
+                    this.addBarangay(location);
                     psgc.barangays.push(location);
                     break;
                 default:
@@ -143,81 +150,41 @@ export default class PSGC {
         return this;
     }
 
-    public associateIntoTables() {
-        this.#logger.info("Start associating PSGC to tables");
-        const psgc = this.#filteredPSGC;
+    private addRegion(location: PSGCRecord) {
+        const region = new Region();
+        region.code = location.code;
+        region.name = location.name;
 
-        this.#logger.info("Regions...");
-        psgc.regions.forEach((location) => {
-            const region = new Region();
-            region.code = location.code;
-            region.name = location.name;
+        this.tables.regions.push(region);
+    }
+    private addProvince(location: PSGCRecord) {
+        const province = new Province();
+        province.code = location.code;
+        province.name = location.name;
 
-            this.#tables.regions.push(region);
-        });
+        this.tables.provinces.push(province);
+    }
+    private addCity(location: PSGCRecord) {
+        const city = new City();
+        city.code = location.code;
+        city.name = location.name;
 
-        this.#logger.info("Provinces...");
-        psgc.provinces.forEach((location) => {
-            const province = new Province();
-            province.code = location.code;
-            province.name = location.name;
+        if (location.geoLevel) city.type = location.geoLevel;
+        if (location.class) city.cityClass = location.class;
 
-            province.setJurisdictionCode();
+        this.tables.cities.push(city);
+    }
+    private addBarangay(location: PSGCRecord) {
+        const barangay = new Barangay();
+        barangay.name = location.name;
+        barangay.code = location.code;
 
-            this.#tables.provinces.push(province);
-        });
-
-        this.#logger.info("Cities:");
-        this.#logger.info("\tCity...");
-        psgc.cities.forEach((location) => {
-            const city = new City();
-            city.code = location.code;
-            city.name = location.name;
-            city.type = location.geoLevel;
-            city.cityClass = location.class;
-
-            city.setJurisdictionCode();
-
-            this.#tables.cities.push(city);
-        });
-
-        this.#logger.info("\tMunicipality...");
-        psgc.municipalities.forEach((location) => {
-            const municipality = new City();
-            municipality.name = location.name;
-            municipality.code = location.code;
-
-            municipality.setJurisdictionCode();
-
-            this.#tables.cities.push(municipality);
-        });
-
-        this.#logger.info("\tSub-Municipality...");
-        psgc.subMunicipalities.forEach((location) => {
-            const subMunicipality = new City();
-            subMunicipality.name = location.name;
-            subMunicipality.code = location.code;
-
-            subMunicipality.setJurisdictionCode();
-
-            this.#tables.cities.push(subMunicipality);
-        });
-
-        this.#logger.info("Barangays...");
-        psgc.barangays.forEach((location) => {
-            const barangay = new Barangay();
-            barangay.name = location.name;
-            barangay.code = location.code;
-
-            barangay.setJurisdictionCode();
-
-            this.#tables.barangays.push(barangay);
-        });
-
-        this.#logger.info("Association completed");
+        this.tables.barangays.push(barangay);
     }
 
-    public clearLocations() {
+    public reset() {
         this.#locations = [];
+        this.#filteredPSGC = new FilteredPSGC();
+        this.#tables = new Tables();
     }
 }
