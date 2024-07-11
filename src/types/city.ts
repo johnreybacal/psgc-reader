@@ -5,32 +5,32 @@ import Province from "./province";
  * subTypes: City / Municipality / Sub-Municipality
  */
 export default class City extends Province {
-    private _provinceCode: string;
-    private _type: string;
-    private _cityClass: string = "";
+    #provinceCode: string;
+    #type: string;
+    #cityClass: string = "";
 
     public setJurisdictionCode() {
         super.setJurisdictionCode();
 
         // HUC city does not have a province
-        if (!(this._type === "City" && this._cityClass === "HUC")) {
-            this._provinceCode = `${this.code.toString().substring(0, 5)}00000`;
+        if (!(this.#type === "City" && this.#cityClass === "HUC")) {
+            this.#provinceCode = `${this.code.toString().substring(0, 5)}00000`;
         }
     }
 
     public get provinceCode() {
-        return this._provinceCode;
+        return this.#provinceCode;
     }
     public set type(value: string) {
-        this._type = value;
+        this.#type = value;
     }
     public get type() {
-        return this._type;
+        return this.#type;
     }
     public set cityClass(value: string) {
-        this._cityClass = value;
+        this.#cityClass = value;
     }
     public get cityClass() {
-        return this._cityClass;
+        return this.#cityClass;
     }
 }

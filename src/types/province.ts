@@ -5,13 +5,13 @@ import Region from "./region";
  * subTypes: Province / HUC
  */
 export default class Province extends Region {
-    private _regionCode: string;
+    #regionCode: string;
 
     public setJurisdictionCode() {
-        this._regionCode = `${this.code.toString().substring(0, 2)}00000000`;
+        this.#regionCode = `${this.code.toString().substring(0, 2)}00000000`;
     }
 
     public get regionCode() {
-        return this._regionCode;
+        return this.#regionCode;
     }
 }

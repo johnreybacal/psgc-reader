@@ -30,69 +30,69 @@ const SUB_MUNICIPALITY = "SubMun";
 const BARANGAY = "Bgy";
 
 export default class PSGC {
-    static _instance: PSGC;
+    static #instance: PSGC;
 
-    private _logger: Logger;
+    #logger: Logger;
 
-    private _locations: PSGCRecord[] = [];
-    private _filteredPSGC: FilteredPSGC = new FilteredPSGC();
-    private _tables: Tables = new Tables();
+    #locations: PSGCRecord[] = [];
+    #filteredPSGC: FilteredPSGC = new FilteredPSGC();
+    #tables: Tables = new Tables();
 
     private constructor() {}
 
     public static get instance(): PSGC {
-        if (!PSGC._instance) {
-            PSGC._instance = new PSGC();
-            PSGC._instance._logger = new Logger();
+        if (!PSGC.#instance) {
+            PSGC.#instance = new PSGC();
+            PSGC.#instance.#logger = new Logger();
         }
 
-        return PSGC._instance;
+        return PSGC.#instance;
     }
 
     public get locations() {
-        return this._locations;
+        return this.#locations;
     }
     public get filteredPSGC() {
-        return this._filteredPSGC;
+        return this.#filteredPSGC;
     }
     public get tables() {
-        return this._tables;
+        return this.#tables;
     }
 
     public enableLogger() {
-        this._logger.setEnabled(true);
+        this.#logger.setEnabled(true);
         return this;
     }
 
     public disableLogger() {
-        this._logger.setEnabled(false);
+        this.#logger.setEnabled(false);
         return this;
     }
 
     public async readExcel(filePath: string, sheetName = DEFAULT_SHEET_NAME) {
         try {
-            this._logger.info(`Start reading: ${filePath}`);
+            this.#logger.info(`Start reading: ${filePath}`);
 
             const sheet = await readXlsxFile<PSGCRecord>(filePath, {
                 sheet: sheetName,
                 map: mapping,
             });
 
-            this._locations = sheet.rows as PSGCRecord[];
+            this.#locations = sheet.rows as PSGCRecord[];
 
-            this._logger.info("Read complete");
+            this.#logger.info("Read complete");
 
             return this;
         } catch (error) {
-            this._logger.error(error);
+            this.#logger.error(error);
         }
     }
 
     public filterGeoLevel() {
-        this._logger.info("Start filtering by geographic level");
+        this.#logger.info("Start filtering by geographic level");
 
-        const psgc = this._filteredPSGC;
-        this._locations.forEach((location) => {
+        const psgc = this.#filteredPSGC;
+        this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
                     psgc.regions.push(location);
@@ -114,7 +114,7 @@ export default class PSGC {
                     break;
                 default:
                     // Some records does not have geo level
-                    this._logger.info("Missing geographic level:", location);
+                    this.#logger.info("Missing geographic level:", location);
 
                     // We'll determine the geo level using it's code
                     location.code = String(location.code);
@@ -139,24 +139,24 @@ export default class PSGC {
             }
         });
 
-        this._logger.info("Filter completed");
+        this.#logger.info("Filter completed");
         return this;
     }
 
     public associateIntoTables() {
-        this._logger.info("Start associating PSGC to tables");
-        const psgc = this._filteredPSGC;
+        this.#logger.info("Start associating PSGC to tables");
+        const psgc = this.#filteredPSGC;
 
-        this._logger.info("Regions...");
+        this.#logger.info("Regions...");
         psgc.regions.forEach((location) => {
             const region = new Region();
             region.code = location.code;
             region.name = location.name;
 
-            this._tables.regions.push(region);
+            this.#tables.regions.push(region);
         });
 
-        this._logger.info("Provinces...");
+        this.#logger.info("Provinces...");
         psgc.provinces.forEach((location) => {
             const province = new Province();
             province.code = location.code;
@@ -164,11 +164,11 @@ export default class PSGC {
 
             province.setJurisdictionCode();
 
-            this._tables.provinces.push(province);
+            this.#tables.provinces.push(province);
         });
 
-        this._logger.info("Cities:");
-        this._logger.info("\tCity...");
+        this.#logger.info("Cities:");
+        this.#logger.info("\tCity...");
         psgc.cities.forEach((location) => {
             const city = new City();
             city.code = location.code;
@@ -178,10 +178,10 @@ export default class PSGC {
 
             city.setJurisdictionCode();
 
-            this._tables.cities.push(city);
+            this.#tables.cities.push(city);
         });
 
-        this._logger.info("\tMunicipality...");
+        this.#logger.info("\tMunicipality...");
         psgc.municipalities.forEach((location) => {
             const municipality = new City();
             municipality.name = location.name;
@@ -189,10 +189,10 @@ export default class PSGC {
 
             municipality.setJurisdictionCode();
 
-            this._tables.cities.push(municipality);
+            this.#tables.cities.push(municipality);
         });
 
-        this._logger.info("\tSub-Municipality...");
+        this.#logger.info("\tSub-Municipality...");
         psgc.subMunicipalities.forEach((location) => {
             const subMunicipality = new City();
             subMunicipality.name = location.name;
@@ -200,10 +200,10 @@ export default class PSGC {
 
             subMunicipality.setJurisdictionCode();
 
-            this._tables.cities.push(subMunicipality);
+            this.#tables.cities.push(subMunicipality);
         });
 
-        this._logger.info("Barangays...");
+        this.#logger.info("Barangays...");
         psgc.barangays.forEach((location) => {
             const barangay = new Barangay();
             barangay.name = location.name;
@@ -211,13 +211,13 @@ export default class PSGC {
 
             barangay.setJurisdictionCode();
 
-            this._tables.barangays.push(barangay);
+            this.#tables.barangays.push(barangay);
         });
 
-        this._logger.info("Association completed");
+        this.#logger.info("Association completed");
     }
 
     public clearLocations() {
-        this._locations = [];
+        this.#locations = [];
     }
 }

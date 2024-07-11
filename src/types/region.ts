@@ -1,17 +1,17 @@
 export default class Region {
-    private _code: string;
-    private _name: string;
+    #code: string;
+    #name: string;
 
     public set code(value: string) {
-        this._code = value;
+        this.#code = value;
     }
     public get code() {
-        return this._code;
+        return this.#code;
     }
     public set name(value: string) {
-        this._name = value;
+        this.#name = value;
     }
     public get name() {
-        return this._name;
+        return this.#name;
     }
 }
