@@ -4,7 +4,6 @@ Library for ingesting PSA's PSGC Publication Files
 
 ## TODO
 
--   Tables access helpers (filters, associations, search)
 -   Convert to JSON / CSV / Avro / Parquet
 -   Create repository layer for saving to a database
     -   Store in single or multiple tables

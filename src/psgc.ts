@@ -1,10 +1,13 @@
 import readXlsxFile from "read-excel-file/node";
+import { Converter, JsonSingleConvert } from "./converter";
 import Logger from "./logger";
 import Barangay from "./types/barangay";
 import City from "./types/city";
+import Municipality from "./types/municipality";
 import Province from "./types/province";
-import { FilteredPSGC, PSGCRecord } from "./types/psgc";
+import { FilteredPSGC, Location, PSGCRecord } from "./types/psgc";
 import Region from "./types/region";
+import SubMunicipality from "./types/subMunicipality";
 import { Tables } from "./types/tables";
 
 const DEFAULT_SHEET_NAME = "PSGC";
@@ -70,6 +73,7 @@ export default class PSGC {
     #locations: PSGCRecord[] = [];
     #filteredPSGC: FilteredPSGC = new FilteredPSGC();
     #tables: Tables = new Tables();
+    #converter: Converter;
 
     private constructor() {}
 
@@ -129,27 +133,39 @@ export default class PSGC {
         this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
-                    this.addRegion(location);
+                    tables.regions.push(this.convertPsgc(location) as Region);
                     psgc.regions.push(location);
                     break;
                 case PROVINCE:
-                    this.addProvince(location);
+                    tables.provinces.push(
+                        this.convertPsgc(location) as Province
+                    );
                     psgc.provinces.push(location);
                     break;
                 case CITY:
-                    this.addCity(location);
+                    tables.cities.push({
+                        code: location.code,
+                        name: location.name,
+                        class: location.class,
+                    } as City);
                     psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
-                    this.addCity(location);
+                    tables.municipalities.push(
+                        this.convertPsgc(location) as Municipality
+                    );
                     psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
-                    this.addCity(location);
+                    tables.subMunicipalities.push(
+                        this.convertPsgc(location) as SubMunicipality
+                    );
                     psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
-                    this.addBarangay(location);
+                    tables.barangays.push(
+                        this.convertPsgc(location) as Barangay
+                    );
                     psgc.barangays.push(location);
                     break;
                 default:
@@ -161,18 +177,32 @@ export default class PSGC {
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
+                        tables.regions.push(
+                            this.convertPsgc(location) as Region
+                        );
                         psgc.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
+                        tables.provinces.push(
+                            this.convertPsgc(location) as Province
+                        );
                         psgc.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
+                        tables.cities.push({
+                            code: location.code,
+                            name: location.name,
+                            class: location.class,
+                        } as City);
                         psgc.cities.push(location);
                     }
                     // Is barangay level
                     else {
+                        tables.barangays.push(
+                            this.convertPsgc(location) as Barangay
+                        );
                         psgc.barangays.push(location);
                     }
                     break;
@@ -184,29 +214,41 @@ export default class PSGC {
     }
 
     public associateLocations() {
+        this.#logger.info("Start location association");
         const tables = this.tables;
+        const ncrCode = "13";
+        const manilaCityCode = `${ncrCode}806`;
 
         const getRegion = (code: string) => {
             return tables.regions.filter((region) =>
                 region.code.startsWith(code.substring(0, 2))
             )[0];
         };
-        const getProvince = (code: string, city: City) => {
-            if (!(city.type === "City" && city.cityClass === "HUC")) {
-                return tables.provinces.filter((province) =>
-                    province.code.startsWith(code.substring(0, 5))
-                )[0];
-            } else {
-                return undefined;
-            }
+        const getProvince = (code: string) => {
+            return tables.provinces.filter((province) =>
+                province.code.startsWith(code.substring(0, 5))
+            )[0];
         };
-        tables.regions.forEach((region) => {
+
+        const nonNcr = tables.regions.filter(
+            (region) => !region.code.startsWith(ncrCode)
+        );
+        nonNcr.forEach((region) => {
             region.provinces = tables.provinces.filter(
                 (province) =>
                     province.code.substring(0, 2) ===
                     region.code.substring(0, 2)
             );
         });
+
+        const ncr = tables.regions.filter((region) =>
+            region.code.startsWith(ncrCode)
+        )[0];
+        ncr.cities = [];
+        ncr.municipalities = [];
+
+        this.#logger.info("\tRegions associated");
+
         tables.provinces.forEach((province) => {
             province.region = getRegion(province.code);
 
@@ -214,57 +256,106 @@ export default class PSGC {
                 (city) =>
                     city.code.substring(0, 5) === province.code.substring(0, 5)
             );
+            province.municipalities = tables.municipalities.filter(
+                (municipality) =>
+                    municipality.code.substring(0, 5) ===
+                    province.code.substring(0, 5)
+            );
         });
+
+        this.#logger.info("\tProvinces associated");
+
         tables.cities.forEach((city) => {
             city.region = getRegion(city.code);
 
-            city.province = getProvince(city.code, city);
+            city.province = getProvince(city.code);
 
+            if (city.code.startsWith(ncrCode)) {
+                // NCR
+                ncr.cities.push(city);
+                city.region = ncr;
+
+                if (city.code.startsWith(manilaCityCode)) {
+                    city.subMunicipalities = [...tables.subMunicipalities];
+                    city.barangays = [];
+                    // Skip barangay if manila
+                    return;
+                }
+            }
             city.barangays = tables.barangays.filter(
                 (barangay) =>
                     barangay.code.substring(0, 7) === city.code.substring(0, 7)
             );
         });
-        tables.barangays.forEach((barangay) => {
-            barangay.region = getRegion(barangay.code);
-            barangay.city = tables.cities.filter((city) =>
-                city.barangays.includes(barangay)
+
+        this.#logger.info("\tCities associated");
+
+        tables.municipalities.forEach((municipality) => {
+            municipality.province = getProvince(municipality.code);
+
+            municipality.barangays = tables.barangays.filter(
+                (barangay) =>
+                    barangay.code.substring(0, 7) ===
+                    municipality.code.substring(0, 7)
+            );
+
+            if (municipality.code.startsWith(ncrCode)) {
+                ncr.municipalities.push(municipality);
+                municipality.region = ncr;
+            }
+        });
+
+        this.#logger.info("\tMunicipalities associated");
+
+        tables.subMunicipalities.forEach((subMunicipality) => {
+            subMunicipality.city = tables.cities.filter((city) =>
+                city.code.startsWith("13806")
             )[0];
 
-            barangay.province = getProvince(barangay.code, barangay.city);
+            subMunicipality.barangays = tables.barangays.filter(
+                (barangay) =>
+                    barangay.code.substring(0, 7) ===
+                    subMunicipality.code.substring(0, 7)
+            );
         });
+
+        this.#logger.info("\tSubMunicipalities associated");
+
+        tables.barangays.forEach((barangay) => {
+            const parents = [
+                ...tables.cities.filter((city) =>
+                    city.barangays.includes(barangay)
+                ),
+                ...tables.municipalities.filter((municipality) =>
+                    municipality.barangays.includes(barangay)
+                ),
+                ...tables.subMunicipalities.filter((subMunicipality) =>
+                    subMunicipality.barangays.includes(barangay)
+                ),
+            ];
+
+            barangay.parent = parents[0];
+        });
+
+        this.#logger.info("\tBarangays associated");
+        this.#logger.info("Location association completed");
+
+        return this;
     }
 
-    private addRegion(location: PSGCRecord) {
-        const region = new Region();
-        region.code = location.code;
-        region.name = location.name;
+    public toSingleJsonFile(path: string) {
+        this.#converter = new JsonSingleConvert();
+        this.#converter.convert(this.tables, path);
 
-        this.tables.regions.push(region);
+        return this;
     }
-    private addProvince(location: PSGCRecord) {
-        const province = new Province();
-        province.code = location.code;
-        province.name = location.name;
 
-        this.tables.provinces.push(province);
-    }
-    private addCity(location: PSGCRecord) {
-        const city = new City();
-        city.code = location.code;
-        city.name = location.name;
+    private convertPsgc(psgc: PSGCRecord) {
+        const location = new Location();
+        location.code = psgc.code;
+        location.name = psgc.name;
 
-        if (location.geoLevel) city.type = location.geoLevel;
-        if (location.class) city.cityClass = location.class;
-
-        this.tables.cities.push(city);
-    }
-    private addBarangay(location: PSGCRecord) {
-        const barangay = new Barangay();
-        barangay.name = location.name;
-        barangay.code = location.code;
-
-        this.tables.barangays.push(barangay);
+        return location;
     }
 
     public reset() {

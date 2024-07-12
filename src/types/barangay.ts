@@ -1,11 +1,8 @@
 import City from "./city";
-import Province from "./province";
-import Region from "./region";
+import Municipality from "./municipality";
+import { Location } from "./psgc";
+import SubMunicipality from "./subMunicipality";
 
-export default class Barangay {
-    code: string;
-    name: string;
-    region: Region;
-    province?: Province;
-    city: City;
+export default class Barangay extends Location {
+    parent: City | Municipality | SubMunicipality;
 }

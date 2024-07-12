@@ -19,3 +19,8 @@ export class FilteredPSGC {
     public subMunicipalities: PSGCRecord[] = [];
     public barangays: PSGCRecord[] = [];
 }
+
+export class Location {
+    code: string;
+    name: string;
+}
