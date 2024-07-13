@@ -208,6 +208,15 @@ export default class PSGC {
         });
 
         this.#logger.info("Filter completed");
+        this.#logger.info("\tRegions:", tables.regions.length);
+        this.#logger.info("\tProvinces:", tables.provinces.length);
+        this.#logger.info("\tCities:", tables.cities.length);
+        this.#logger.info("\tMunicipalities:", tables.municipalities.length);
+        this.#logger.info(
+            "\tSubMunicipalities:",
+            tables.subMunicipalities.length
+        );
+        this.#logger.info("\tBarangays:", tables.barangays.length);
         return this;
     }
 
