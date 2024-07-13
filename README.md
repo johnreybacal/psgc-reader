@@ -7,10 +7,10 @@ A package for ingesting PSGC publication files
 ### 1. Import the package
 
 ```typescript
-import PSGC from "psgc";
+import PsgcReader from "psgc-reader";
 
 // We only need one instance of the object
-const psgc = PSGC.instance;
+const psgc = PsgcReader.instance;
 ```
 
 ### 2. Read
