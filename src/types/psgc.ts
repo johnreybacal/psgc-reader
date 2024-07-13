@@ -1,4 +1,4 @@
-export interface PSGCRecord {
+export interface PsgcRecord {
     code: string;
     name: string;
     geoLevel: string;
@@ -11,13 +11,13 @@ export interface PSGCRecord {
     status: string;
 }
 
-export class FilteredPSGC {
-    public regions: PSGCRecord[] = [];
-    public provinces: PSGCRecord[] = [];
-    public cities: PSGCRecord[] = [];
-    public municipalities: PSGCRecord[] = [];
-    public subMunicipalities: PSGCRecord[] = [];
-    public barangays: PSGCRecord[] = [];
+export class FilteredPsgc {
+    public regions: PsgcRecord[] = [];
+    public provinces: PsgcRecord[] = [];
+    public cities: PsgcRecord[] = [];
+    public municipalities: PsgcRecord[] = [];
+    public subMunicipalities: PsgcRecord[] = [];
+    public barangays: PsgcRecord[] = [];
 }
 
 export class Location {

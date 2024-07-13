@@ -21,7 +21,7 @@ const psgc = PsgcReader.instance;
 -   Records will be stored in `locations`
 
 ```typescript
-await psgc.readExcel(filePath, sheetName);
+await psgc.read(filePath, sheetName);
 
 console.log(psgc.locations);
 ```
@@ -32,7 +32,7 @@ console.log(psgc.locations);
 -   `tables` contain location data that we can associate to each other
 
 ```typescript
-psgc.filterGeoLevel();
+psgc.filter();
 
 console.log(psgc.filteredPSGC);
 console.log(psgc.tables);
@@ -43,7 +43,7 @@ console.log(psgc.tables);
 This will link all the locations in the `tables` property
 
 ```typescript
-psgc.associateLocations();
+psgc.associate();
 ```
 
 ### 5. Explore

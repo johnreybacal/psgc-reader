@@ -4,7 +4,7 @@ import Barangay from "./types/barangay";
 import City from "./types/city";
 import Municipality from "./types/municipality";
 import Province from "./types/province";
-import { FilteredPSGC, Location, PSGCRecord } from "./types/psgc";
+import { FilteredPsgc, Location, PsgcRecord } from "./types/psgc";
 import Region from "./types/region";
 import SubMunicipality from "./types/subMunicipality";
 import { Tables } from "./types/tables";
@@ -69,8 +69,8 @@ export default class PsgcReader {
 
     #logger: Logger;
 
-    #locations: PSGCRecord[] = [];
-    #filteredPSGC: FilteredPSGC = new FilteredPSGC();
+    #locations: PsgcRecord[] = [];
+    #filteredPSGC: FilteredPsgc = new FilteredPsgc();
     #tables: Tables = new Tables();
 
     private constructor() {}
@@ -94,17 +94,30 @@ export default class PsgcReader {
         return this.#tables;
     }
 
+    /**
+     * Enables the logger
+     */
     public enableLogger() {
         this.#logger.setEnabled(true);
         return this;
     }
 
+    /**
+     * Disables the logger
+     */
     public disableLogger() {
         this.#logger.setEnabled(false);
         return this;
     }
 
-    public async readExcel(filePath: string, sheet = DEFAULT_SHEET_NAME) {
+    /**
+     * Read PSA's PSGC publication datafile
+     * - Records will be stored in `locations`
+     * - Get the publication datafile here: https://psa.gov.ph/classification/psgc
+     * @param filePath path to PSGC publication datafile
+     * @param sheet defaults to PSGC
+     */
+    public async read(filePath: string, sheet = DEFAULT_SHEET_NAME) {
         try {
             this.#logger.info(`Start reading: ${filePath}`);
 
@@ -113,17 +126,21 @@ export default class PsgcReader {
                 schema,
             });
 
-            this.#locations = workSheet.rows as unknown[] as PSGCRecord[];
+            this.#locations = workSheet.rows as unknown[] as PsgcRecord[];
 
             this.#logger.info("Read complete");
-
-            return this;
         } catch (error) {
             this.#logger.error(error);
         }
     }
 
-    public filterGeoLevel() {
+    /**
+     * Filters the `locations` into:
+     * - `filteredPSGC`: filtered `locations`
+     * - `tables`: contain location data that we can associate to each other
+     * @returns {PsgcReader}
+     */
+    public filter() {
         this.#logger.info("Start filtering by geographic level");
 
         const psgc = this.#filteredPSGC;
@@ -220,7 +237,11 @@ export default class PsgcReader {
         return this;
     }
 
-    public associateLocations() {
+    /**
+     * Associates all the locations in the `tables` property
+     * @returns {PsgcReader}
+     */
+    public associate() {
         this.#logger.info("Start location association");
         const tables = this.tables;
         const ncrCode = "13";
@@ -350,7 +371,7 @@ export default class PsgcReader {
         return this;
     }
 
-    private convertPsgc(psgc: PSGCRecord) {
+    private convertPsgc(psgc: PsgcRecord) {
         const location = new Location();
         location.code = psgc.code;
         location.name = psgc.name;
@@ -360,7 +381,7 @@ export default class PsgcReader {
 
     public reset() {
         this.#locations = [];
-        this.#filteredPSGC = new FilteredPSGC();
+        this.#filteredPSGC = new FilteredPsgc();
         this.#tables = new Tables();
     }
 }

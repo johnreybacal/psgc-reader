@@ -7,9 +7,9 @@ const test = async () => {
 
     psgc.enableLogger();
 
-    await psgc.readExcel(filePath);
+    await psgc.read(filePath);
 
-    psgc.filterGeoLevel().associateLocations();
+    psgc.filter().associate();
 
     console.log("[Regions]");
     psgc.tables.regions.map((region) => console.log(" >", region.name));
