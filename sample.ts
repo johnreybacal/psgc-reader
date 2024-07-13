@@ -1,9 +1,9 @@
-import PSGC from "./src/psgc";
+import PsgcReader from "./src/psgc-reader";
 
 const test = async () => {
     const filePath = "./data/PSGC-April-2024-Publication-Datafile.xlsx";
 
-    const psgc = PSGC.instance;
+    const psgc = PsgcReader.instance;
 
     psgc.enableLogger();
 

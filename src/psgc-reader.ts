@@ -64,8 +64,8 @@ const MUNICIPALITY = "Mun";
 const SUB_MUNICIPALITY = "SubMun";
 const BARANGAY = "Bgy";
 
-export default class PSGC {
-    static #instance: PSGC;
+export default class PsgcReader {
+    static #instance: PsgcReader;
 
     #logger: Logger;
 
@@ -75,13 +75,13 @@ export default class PSGC {
 
     private constructor() {}
 
-    public static get instance(): PSGC {
-        if (!PSGC.#instance) {
-            PSGC.#instance = new PSGC();
-            PSGC.#instance.#logger = new Logger();
+    public static get instance(): PsgcReader {
+        if (!PsgcReader.#instance) {
+            PsgcReader.#instance = new PsgcReader();
+            PsgcReader.#instance.#logger = new Logger();
         }
 
-        return PSGC.#instance;
+        return PsgcReader.#instance;
     }
 
     public get locations() {
