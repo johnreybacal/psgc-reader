@@ -15,7 +15,8 @@ const psgc = PSGC.instance;
 
 ### 2. Read
 
--   supply the path to `filePath`
+-   supply the publication file to `filePath`
+    -   You can get publication files here: https://psa.gov.ph/classification/psgc
 -   `sheetName` has default value set to "PSGC"
 -   Records will be stored in `locations`
 
