@@ -1,4 +1,4 @@
-import PsgcReader from "./src/psgc-reader";
+import PsgcReader from "./src";
 
 const test = async () => {
     const filePath = "./data/PSGC-April-2024-Publication-Datafile.xlsx";

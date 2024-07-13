@@ -1,3 +1,3 @@
-import PSGC from "./psgc";
+import PsgcReader from "./psgc-reader";
 
-export default PSGC;
+export default PsgcReader;
