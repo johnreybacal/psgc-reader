@@ -1,5 +1,4 @@
 import readXlsxFile from "read-excel-file/node";
-import { Converter, JsonSingleConvert } from "./converter";
 import Logger from "./logger";
 import Barangay from "./types/barangay";
 import City from "./types/city";
@@ -73,7 +72,6 @@ export default class PSGC {
     #locations: PSGCRecord[] = [];
     #filteredPSGC: FilteredPSGC = new FilteredPSGC();
     #tables: Tables = new Tables();
-    #converter: Converter;
 
     private constructor() {}
 
@@ -339,13 +337,6 @@ export default class PSGC {
 
         this.#logger.info("\tBarangays associated");
         this.#logger.info("Location association completed");
-
-        return this;
-    }
-
-    public toSingleJsonFile(path: string) {
-        this.#converter = new JsonSingleConvert();
-        this.#converter.convert(this.tables, path);
 
         return this;
     }
