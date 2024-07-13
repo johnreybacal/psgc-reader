@@ -1,6 +1,6 @@
 {
     "name": "psgc-reader",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "description": "Reads a PSGC publicaton file",
     "main": "dist/index.js",
     "typings": "dist/index.d.ts",
@@ -8,7 +8,7 @@
         "dist"
     ],
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "publish": "npx tsc && npm publish"
     },
     "repository": {
         "type": "git",
