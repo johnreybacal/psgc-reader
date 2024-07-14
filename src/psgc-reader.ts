@@ -7,7 +7,6 @@ import Province from "./types/province";
 import { FilteredPsgc, Location, PsgcRecord } from "./types/psgc";
 import Region from "./types/region";
 import SubMunicipality from "./types/subMunicipality";
-import { Tables } from "./types/tables";
 
 const DEFAULT_SHEET_NAME = "PSGC";
 const schema = {
@@ -71,7 +70,12 @@ export default class PsgcReader {
 
     #locations: PsgcRecord[] = [];
     #filteredPSGC: FilteredPsgc = new FilteredPsgc();
-    #tables: Tables = new Tables();
+    #regions: Region[] = [];
+    #provinces: Province[] = [];
+    #cities: City[] = [];
+    #municipalities: Municipality[] = [];
+    #subMunicipalities: SubMunicipality[] = [];
+    #barangays: Barangay[] = [];
 
     private constructor() {}
 
@@ -90,8 +94,23 @@ export default class PsgcReader {
     public get filteredPSGC() {
         return this.#filteredPSGC;
     }
-    public get tables() {
-        return this.#tables;
+    public get regions() {
+        return this.#regions;
+    }
+    public get provinces() {
+        return this.#provinces;
+    }
+    public get cities() {
+        return this.#cities;
+    }
+    public get municipalities() {
+        return this.#municipalities;
+    }
+    public get subMunicipalities() {
+        return this.#subMunicipalities;
+    }
+    public get barangays() {
+        return this.#barangays;
     }
 
     /**
@@ -137,28 +156,31 @@ export default class PsgcReader {
     /**
      * Filters the `locations` into:
      * - `filteredPSGC`: filtered `locations`
-     * - `tables`: contain location data that we can associate to each other
+     * - Lists that can be associated:
+     *   - `regions`
+     *   - `provinces`
+     *   - `cities`
+     *   - `municipalities`
+     *   - `subMunicipalities`
+     *   - `barangays`
      * @returns {PsgcReader}
      */
     public filter() {
         this.#logger.info("Start filtering by geographic level");
 
         const psgc = this.#filteredPSGC;
-        const tables = this.#tables;
         this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
-                    tables.regions.push(this.convertPsgc(location) as Region);
+                    this.regions.push(this.convertPsgc(location) as Region);
                     psgc.regions.push(location);
                     break;
                 case PROVINCE:
-                    tables.provinces.push(
-                        this.convertPsgc(location) as Province
-                    );
+                    this.provinces.push(this.convertPsgc(location) as Province);
                     psgc.provinces.push(location);
                     break;
                 case CITY:
-                    tables.cities.push({
+                    this.cities.push({
                         code: location.code,
                         name: location.name,
                         class: location.class,
@@ -166,21 +188,19 @@ export default class PsgcReader {
                     psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
-                    tables.municipalities.push(
+                    this.municipalities.push(
                         this.convertPsgc(location) as Municipality
                     );
                     psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
-                    tables.subMunicipalities.push(
+                    this.subMunicipalities.push(
                         this.convertPsgc(location) as SubMunicipality
                     );
                     psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
-                    tables.barangays.push(
-                        this.convertPsgc(location) as Barangay
-                    );
+                    this.barangays.push(this.convertPsgc(location) as Barangay);
                     psgc.barangays.push(location);
                     break;
                 default:
@@ -192,21 +212,19 @@ export default class PsgcReader {
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
-                        tables.regions.push(
-                            this.convertPsgc(location) as Region
-                        );
+                        this.regions.push(this.convertPsgc(location) as Region);
                         psgc.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
-                        tables.provinces.push(
+                        this.provinces.push(
                             this.convertPsgc(location) as Province
                         );
                         psgc.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
-                        tables.cities.push({
+                        this.cities.push({
                             code: location.code,
                             name: location.name,
                             class: location.class,
@@ -215,7 +233,7 @@ export default class PsgcReader {
                     }
                     // Is barangay level
                     else {
-                        tables.barangays.push(
+                        this.barangays.push(
                             this.convertPsgc(location) as Barangay
                         );
                         psgc.barangays.push(location);
@@ -225,51 +243,50 @@ export default class PsgcReader {
         });
 
         this.#logger.info("Filter completed");
-        this.#logger.info("\tRegions:", tables.regions.length);
-        this.#logger.info("\tProvinces:", tables.provinces.length);
-        this.#logger.info("\tCities:", tables.cities.length);
-        this.#logger.info("\tMunicipalities:", tables.municipalities.length);
+        this.#logger.info("\tRegions:", this.regions.length);
+        this.#logger.info("\tProvinces:", this.provinces.length);
+        this.#logger.info("\tCities:", this.cities.length);
+        this.#logger.info("\tMunicipalities:", this.municipalities.length);
         this.#logger.info(
             "\tSubMunicipalities:",
-            tables.subMunicipalities.length
+            this.subMunicipalities.length
         );
-        this.#logger.info("\tBarangays:", tables.barangays.length);
+        this.#logger.info("\tBarangays:", this.barangays.length);
         return this;
     }
 
     /**
-     * Associates all the locations in the `tables` property
+     * Associates `regions`, `provinces`, `cities`, `municipalities`, `subMunicipalities`, and `barangays`
      * @returns {PsgcReader}
      */
     public associate() {
         this.#logger.info("Start location association");
-        const tables = this.tables;
         const ncrCode = "13";
         const manilaCityCode = `${ncrCode}806`;
 
         const getRegion = (code: string) => {
-            return tables.regions.filter((region) =>
+            return this.regions.filter((region) =>
                 region.code.startsWith(code.substring(0, 2))
             )[0];
         };
         const getProvince = (code: string) => {
-            return tables.provinces.filter((province) =>
+            return this.provinces.filter((province) =>
                 province.code.startsWith(code.substring(0, 5))
             )[0];
         };
 
-        const nonNcr = tables.regions.filter(
+        const nonNcr = this.regions.filter(
             (region) => !region.code.startsWith(ncrCode)
         );
         nonNcr.forEach((region) => {
-            region.provinces = tables.provinces.filter(
+            region.provinces = this.provinces.filter(
                 (province) =>
                     province.code.substring(0, 2) ===
                     region.code.substring(0, 2)
             );
         });
 
-        const ncr = tables.regions.filter((region) =>
+        const ncr = this.regions.filter((region) =>
             region.code.startsWith(ncrCode)
         )[0];
         ncr.cities = [];
@@ -277,14 +294,14 @@ export default class PsgcReader {
 
         this.#logger.info("\tRegions associated");
 
-        tables.provinces.forEach((province) => {
+        this.provinces.forEach((province) => {
             province.region = getRegion(province.code);
 
-            province.cities = tables.cities.filter(
+            province.cities = this.cities.filter(
                 (city) =>
                     city.code.substring(0, 5) === province.code.substring(0, 5)
             );
-            province.municipalities = tables.municipalities.filter(
+            province.municipalities = this.municipalities.filter(
                 (municipality) =>
                     municipality.code.substring(0, 5) ===
                     province.code.substring(0, 5)
@@ -293,7 +310,7 @@ export default class PsgcReader {
 
         this.#logger.info("\tProvinces associated");
 
-        tables.cities.forEach((city) => {
+        this.cities.forEach((city) => {
             city.region = getRegion(city.code);
 
             city.province = getProvince(city.code);
@@ -304,13 +321,13 @@ export default class PsgcReader {
                 city.region = ncr;
 
                 if (city.code.startsWith(manilaCityCode)) {
-                    city.subMunicipalities = [...tables.subMunicipalities];
+                    city.subMunicipalities = [...this.subMunicipalities];
                     city.barangays = [];
                     // Skip barangay if manila
                     return;
                 }
             }
-            city.barangays = tables.barangays.filter(
+            city.barangays = this.barangays.filter(
                 (barangay) =>
                     barangay.code.substring(0, 7) === city.code.substring(0, 7)
             );
@@ -318,10 +335,10 @@ export default class PsgcReader {
 
         this.#logger.info("\tCities associated");
 
-        tables.municipalities.forEach((municipality) => {
+        this.municipalities.forEach((municipality) => {
             municipality.province = getProvince(municipality.code);
 
-            municipality.barangays = tables.barangays.filter(
+            municipality.barangays = this.barangays.filter(
                 (barangay) =>
                     barangay.code.substring(0, 7) ===
                     municipality.code.substring(0, 7)
@@ -335,12 +352,12 @@ export default class PsgcReader {
 
         this.#logger.info("\tMunicipalities associated");
 
-        tables.subMunicipalities.forEach((subMunicipality) => {
-            subMunicipality.city = tables.cities.filter((city) =>
+        this.subMunicipalities.forEach((subMunicipality) => {
+            subMunicipality.city = this.cities.filter((city) =>
                 city.code.startsWith("13806")
             )[0];
 
-            subMunicipality.barangays = tables.barangays.filter(
+            subMunicipality.barangays = this.barangays.filter(
                 (barangay) =>
                     barangay.code.substring(0, 7) ===
                     subMunicipality.code.substring(0, 7)
@@ -349,15 +366,15 @@ export default class PsgcReader {
 
         this.#logger.info("\tSubMunicipalities associated");
 
-        tables.barangays.forEach((barangay) => {
+        this.barangays.forEach((barangay) => {
             const parents = [
-                ...tables.cities.filter((city) =>
+                ...this.cities.filter((city) =>
                     city.barangays.includes(barangay)
                 ),
-                ...tables.municipalities.filter((municipality) =>
+                ...this.municipalities.filter((municipality) =>
                     municipality.barangays.includes(barangay)
                 ),
-                ...tables.subMunicipalities.filter((subMunicipality) =>
+                ...this.subMunicipalities.filter((subMunicipality) =>
                     subMunicipality.barangays.includes(barangay)
                 ),
             ];
@@ -382,6 +399,11 @@ export default class PsgcReader {
     public reset() {
         this.#locations = [];
         this.#filteredPSGC = new FilteredPsgc();
-        this.#tables = new Tables();
+        this.#regions = [];
+        this.#provinces = [];
+        this.#cities = [];
+        this.#municipalities = [];
+        this.#subMunicipalities = [];
+        this.#barangays = [];
     }
 }

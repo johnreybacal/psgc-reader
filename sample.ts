@@ -12,25 +12,22 @@ const test = async () => {
     psgc.filter().associate();
 
     console.log("[Regions]");
-    psgc.tables.regions.map((region) => console.log(" >", region.name));
+    psgc.regions.map((region) => console.log(" >", region.name));
 
     console.log("[SubMunicipalities under Manila]");
-    psgc.tables.cities
+    psgc.cities
         .filter((city) => city.code === "1380600000")[0]
         .subMunicipalities?.map((subMunicipality) =>
             console.log(" >", subMunicipality.name)
         );
 
     // https://stackoverflow.com/a/66523350
-    const barangayCountByName = psgc.tables.barangays.reduce(
-        (barangay, { name }) => {
-            barangay[name] = barangay[name] || 0;
-            barangay[name] += 1;
+    const barangayCountByName = psgc.barangays.reduce((barangay, { name }) => {
+        barangay[name] = barangay[name] || 0;
+        barangay[name] += 1;
 
-            return barangay;
-        },
-        {}
-    );
+        return barangay;
+    }, {});
 
     // https://stackoverflow.com/a/1069840
     const barangayCountByNameSorted: any[] = [];
