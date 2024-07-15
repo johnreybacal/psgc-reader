@@ -5,8 +5,8 @@ export interface PsgcRecord {
     class: string;
     oldCode: string;
     oldName: string;
-    incomeClass: string;
-    urbanRural: string;
+    incomeClassification: string;
+    urbanRuralClassification: string;
     population: number;
     status: string;
 }
@@ -19,8 +19,9 @@ export class FilteredPsgc {
     public subMunicipalities: PsgcRecord[] = [];
     public barangays: PsgcRecord[] = [];
 }
-
 export class Location {
     code: string;
     name: string;
+    oldCode: string;
+    population: number;
 }

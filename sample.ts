@@ -1,4 +1,4 @@
-import PsgcReader from "./src";
+import PsgcReader, { BasicBuilder } from "./src";
 
 const test = async () => {
     const filePath = "./data/PSGC-April-2024-Publication-Datafile.xlsx";
@@ -9,7 +9,7 @@ const test = async () => {
 
     await psgc.read(filePath);
 
-    psgc.filter().associate();
+    psgc.setBuilder(new BasicBuilder()).filter().associate();
 
     console.log("[Regions]");
     psgc.regions.map((region) => console.log(" >", region.name));

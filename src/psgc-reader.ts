@@ -1,4 +1,5 @@
 import readXlsxFile from "read-excel-file/node";
+import { CompleteBuilder, LocationBuilder } from "./builder";
 import Logger from "./logger";
 import Barangay from "./types/barangay";
 import City from "./types/city";
@@ -35,11 +36,11 @@ const schema = {
         type: String,
     },
     "Income\nClassification": {
-        prop: "incomeClass",
+        prop: "incomeClassification",
         type: String,
     },
     "Urban / Rural\n(based on 2020 CPH)": {
-        prop: "urbanRural",
+        prop: "urbanRuralClassification",
         type: String,
     },
     "2020 Population": {
@@ -67,6 +68,7 @@ export default class PsgcReader {
     static #instance: PsgcReader;
 
     #logger: Logger;
+    #builder: LocationBuilder;
 
     #locations: PsgcRecord[] = [];
     #filteredPSGC: FilteredPsgc = new FilteredPsgc();
@@ -129,6 +131,12 @@ export default class PsgcReader {
         return this;
     }
 
+    public setBuilder(builder: LocationBuilder) {
+        this.#builder = builder;
+
+        return this;
+    }
+
     /**
      * Read PSA's PSGC publication datafile
      * - Records will be stored in `locations`
@@ -168,39 +176,41 @@ export default class PsgcReader {
     public filter() {
         this.#logger.info("Start filtering by geographic level");
 
+        if (!this.#builder) {
+            this.#builder = new CompleteBuilder();
+        }
+
         const psgc = this.#filteredPSGC;
+        const builder = this.#builder;
+
         this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
-                    this.regions.push(this.convertPsgc(location) as Region);
+                    this.regions.push(builder.buildRegion(location));
                     psgc.regions.push(location);
                     break;
                 case PROVINCE:
-                    this.provinces.push(this.convertPsgc(location) as Province);
+                    this.provinces.push(builder.buildProvince(location));
                     psgc.provinces.push(location);
                     break;
                 case CITY:
-                    this.cities.push({
-                        code: location.code,
-                        name: location.name,
-                        class: location.class,
-                    } as City);
+                    this.cities.push(builder.buildCity(location));
                     psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
                     this.municipalities.push(
-                        this.convertPsgc(location) as Municipality
+                        builder.buildMunicipality(location)
                     );
                     psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
                     this.subMunicipalities.push(
-                        this.convertPsgc(location) as SubMunicipality
+                        builder.buildSubMunicipality(location)
                     );
                     psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
-                    this.barangays.push(this.convertPsgc(location) as Barangay);
+                    this.barangays.push(builder.buildBarangay(location));
                     psgc.barangays.push(location);
                     break;
                 default:
@@ -212,30 +222,22 @@ export default class PsgcReader {
 
                     // Is region level
                     if (location.code.endsWith("00000000")) {
-                        this.regions.push(this.convertPsgc(location) as Region);
+                        this.regions.push(builder.buildRegion(location));
                         psgc.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
-                        this.provinces.push(
-                            this.convertPsgc(location) as Province
-                        );
+                        this.provinces.push(builder.buildProvince(location));
                         psgc.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
-                        this.cities.push({
-                            code: location.code,
-                            name: location.name,
-                            class: location.class,
-                        } as City);
+                        this.cities.push(builder.buildCity(location));
                         psgc.cities.push(location);
                     }
                     // Is barangay level
                     else {
-                        this.barangays.push(
-                            this.convertPsgc(location) as Barangay
-                        );
+                        this.barangays.push(builder.buildBarangay(location));
                         psgc.barangays.push(location);
                     }
                     break;

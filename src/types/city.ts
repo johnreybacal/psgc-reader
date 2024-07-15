@@ -9,6 +9,7 @@ import SubMunicipality from "./subMunicipality";
  */
 export default class City extends Location {
     class: string;
+    incomeClassification: string;
     region?: Region;
     province?: Province;
     subMunicipalities?: SubMunicipality[];
