@@ -26,6 +26,18 @@ await psgc.read(filePath, sheetName);
 console.log(psgc.locations);
 ```
 
+#### 2.1 Before filtering, select a builder
+
+```typescript
+import PsgcReader, { BasicBuilder, CompleteBuilder } from "psgc-reader";
+
+// The BasicBuilder will omit statistical fields
+psgc.setBuilder(new BasicBuilder());
+
+// Default builder: includes all fields
+psgc.setBuilder(new CompleteBuilder());
+```
+
 ### 3. Filter
 
 -   `filteredPSGC` is just filtered `locations`
