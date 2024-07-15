@@ -7,9 +7,6 @@
     "files": [
         "dist"
     ],
-    "scripts": {
-        "publish": "npx tsc && npm publish"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/johnreybacal/psgc-reader.git"
