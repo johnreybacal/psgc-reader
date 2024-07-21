@@ -63,7 +63,6 @@ psgcReader.setBuilder(new CompleteBuilder());
 
 ### 3. Filter
 
--   `filteredPSGC` is just filtered `locations`
 -   `regions`
 -   `provinces`
 -   `cities`
@@ -74,7 +73,6 @@ psgcReader.setBuilder(new CompleteBuilder());
 ```typescript
 psgcReader.filter();
 
-console.log(psgcReader.filteredPSGC);
 console.log(psgcReader.regions);
 console.log(psgcReader.provinces);
 console.log(psgcReader.cities);
