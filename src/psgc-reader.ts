@@ -5,7 +5,7 @@ import Barangay from "./types/barangay";
 import City from "./types/city";
 import Municipality from "./types/municipality";
 import Province from "./types/province";
-import { FilteredPsgc, Location, PsgcRecord } from "./types/psgc";
+import { FilteredPsgc, PsgcRecord } from "./types/psgc";
 import Region from "./types/region";
 import SubMunicipality from "./types/subMunicipality";
 
@@ -388,14 +388,6 @@ export default class PsgcReader {
         this.#logger.info("Location association completed");
 
         return this;
-    }
-
-    private convertPsgc(psgc: PsgcRecord) {
-        const location = new Location();
-        location.code = psgc.code;
-        location.name = psgc.name;
-
-        return location;
     }
 
     public reset() {
