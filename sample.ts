@@ -7,7 +7,7 @@ const test = async () => {
     // psgc.enableLogger();
     // await psgc.readPublicationFile(filePath);
     // psgc.setBuilder(new BasicBuilder()).filter().associate();
-    const psgc = await PsgcReader.instance.read(filePath);
+    const psgc = await PsgcReader.read(filePath);
 
     console.log("[Regions]");
     psgc.regions.map((region) => console.log(" >", region.name));
