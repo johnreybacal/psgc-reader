@@ -1,5 +1,5 @@
 import readXlsxFile from "read-excel-file/node";
-import { CompleteBuilder, LocationBuilder } from "./builder";
+import { BasicBuilder, CompleteBuilder, LocationBuilder } from "./builder";
 import Logger from "./logger";
 import Barangay from "./types/barangay";
 import City from "./types/city";
@@ -144,7 +144,10 @@ export default class PsgcReader {
      * @param filePath path to PSGC publication datafile
      * @param sheet defaults to PSGC
      */
-    public async read(filePath: string, sheet = DEFAULT_SHEET_NAME) {
+    public async readPublicationFile(
+        filePath: string,
+        sheet = DEFAULT_SHEET_NAME
+    ) {
         try {
             this.#logger.info(`Start reading: ${filePath}`);
 
@@ -388,6 +391,59 @@ export default class PsgcReader {
         this.#logger.info("Location association completed");
 
         return this;
+    }
+
+    /**
+     * Reads the publication file and return its records
+     * @param filePath path to PSGC publication datafile
+     * @param sheet defaults to PSGC
+     */
+    public async readRaw(
+        filePath: string,
+        sheet = DEFAULT_SHEET_NAME
+    ): Promise<PsgcRecord[]> {
+        await this.readPublicationFile(filePath, sheet);
+        return this.#locations;
+    }
+    /**
+     * Reads, filters, and associate the records of the publication file
+     * @param filePath path to PSGC publication datafile
+     * @param sheet defaults to PSGC
+     */
+    public async read(filePath: string, sheet = DEFAULT_SHEET_NAME) {
+        await this.readPublicationFile(filePath, sheet);
+        this.filter().associate();
+
+        return {
+            regions: this.#regions,
+            provinces: this.#provinces,
+            cities: this.#cities,
+            municipalities: this.#municipalities,
+            subMunicipalities: this.#subMunicipalities,
+            barangays: this.#barangays,
+        };
+    }
+
+    /**
+     * Reads, drops statistics columns, filters, and associate the records of the publication file
+     * @param filePath path to PSGC publication datafile
+     * @param sheet defaults to PSGC
+     */
+    public async readWithoutStatistics(
+        filePath: string,
+        sheet = DEFAULT_SHEET_NAME
+    ) {
+        await this.readPublicationFile(filePath, sheet);
+        this.setBuilder(new BasicBuilder()).filter().associate();
+
+        return {
+            regions: this.#regions,
+            provinces: this.#provinces,
+            cities: this.#cities,
+            municipalities: this.#municipalities,
+            subMunicipalities: this.#subMunicipalities,
+            barangays: this.#barangays,
+        };
     }
 
     public reset() {

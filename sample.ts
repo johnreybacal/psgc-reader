@@ -1,15 +1,13 @@
-import PsgcReader, { BasicBuilder } from "./src";
+import PsgcReader from "./src";
 
 const test = async () => {
     const filePath = "./data/PSGC-April-2024-Publication-Datafile.xlsx";
 
-    const psgc = PsgcReader.instance;
-
-    psgc.enableLogger();
-
-    await psgc.read(filePath);
-
-    psgc.setBuilder(new BasicBuilder()).filter().associate();
+    // const psgc = PsgcReader.instance;
+    // psgc.enableLogger();
+    // await psgc.readPublicationFile(filePath);
+    // psgc.setBuilder(new BasicBuilder()).filter().associate();
+    const psgc = await PsgcReader.instance.read(filePath);
 
     console.log("[Regions]");
     psgc.regions.map((region) => console.log(" >", region.name));

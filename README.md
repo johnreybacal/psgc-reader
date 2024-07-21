@@ -2,7 +2,30 @@
 
 A package for ingesting PSGC publication files
 
-## How to use
+## Quickstart
+
+```typescript
+import PsgcReader from "psgc-reader";
+
+const result = await PsgcReader.instance.read(filePath);
+// result contains regions, provinces, cities, municipalities, subMunicipalities, and barangays that are associated with each other
+
+// if statistics columns are not needed
+const resultWithoutStatistics = await PsgcReader.instance.readWithoutStatistics(
+    filePath
+);
+```
+
+Or, just the raw data
+
+```typescript
+import PsgcReader from "psgc-reader";
+
+const result = await PsgcReader.instance.readRaw(filePath);
+// result is an array
+```
+
+## Or do it step by step
 
 ### 1. Import the package
 
@@ -10,7 +33,7 @@ A package for ingesting PSGC publication files
 import PsgcReader from "psgc-reader";
 
 // We only need one instance of the object
-const psgc = PsgcReader.instance;
+const psgcReader = PsgcReader.instance;
 ```
 
 ### 2. Read
@@ -21,9 +44,9 @@ const psgc = PsgcReader.instance;
 -   Records will be stored in `locations`
 
 ```typescript
-await psgc.read(filePath, sheetName);
+await psgcReader.readPublicationFile(filePath, sheetName);
 
-console.log(psgc.locations);
+console.log(psgcReader.locations);
 ```
 
 #### 2.1 Before filtering, select a builder
@@ -32,10 +55,10 @@ console.log(psgc.locations);
 import PsgcReader, { BasicBuilder, CompleteBuilder } from "psgc-reader";
 
 // The BasicBuilder will omit statistical fields
-psgc.setBuilder(new BasicBuilder());
+psgcReader.setBuilder(new BasicBuilder());
 
 // Default builder: includes all fields
-psgc.setBuilder(new CompleteBuilder());
+psgcReader.setBuilder(new CompleteBuilder());
 ```
 
 ### 3. Filter
@@ -49,15 +72,15 @@ psgc.setBuilder(new CompleteBuilder());
 -   `barangays`
 
 ```typescript
-psgc.filter();
+psgcReader.filter();
 
-console.log(psgc.filteredPSGC);
-console.log(psgc.regions);
-console.log(psgc.provinces);
-console.log(psgc.cities);
-console.log(psgc.municipalities);
-console.log(psgc.subMunicipalities);
-console.log(psgc.barangays);
+console.log(psgcReader.filteredPSGC);
+console.log(psgcReader.regions);
+console.log(psgcReader.provinces);
+console.log(psgcReader.cities);
+console.log(psgcReader.municipalities);
+console.log(psgcReader.subMunicipalities);
+console.log(psgcReader.barangays);
 ```
 
 ### 4. Associate
@@ -65,29 +88,32 @@ console.log(psgc.barangays);
 This will link `regions`, `provinces`, `cities`, `municipalities`, `subMunicipalities`, and `barangays`
 
 ```typescript
-psgc.associate();
+psgcReader.associate();
 ```
 
 ### 5. Explore
 
 ```typescript
 console.log("[Regions]");
-psgc.regions.map((region) => console.log(" >", region.name));
+psgcReader.regions.map((region) => console.log(" >", region.name));
 
 console.log("[SubMunicipalities under Manila]");
-psgc.cities
+psgcReader.cities
     .filter((city) => city.code === "1380600000")[0]
     .subMunicipalities?.map((subMunicipality) =>
         console.log(" >", subMunicipality.name)
     );
 
 // https://stackoverflow.com/a/66523350
-const barangayCountByName = psgc.barangays.reduce((barangay, { name }) => {
-    barangay[name] = barangay[name] || 0;
-    barangay[name] += 1;
+const barangayCountByName = psgcReader.barangays.reduce(
+    (barangay, { name }) => {
+        barangay[name] = barangay[name] || 0;
+        barangay[name] += 1;
 
-    return barangay;
-}, {});
+        return barangay;
+    },
+    {}
+);
 
 // https://stackoverflow.com/a/1069840
 const barangayCountByNameSorted: any[] = [];
