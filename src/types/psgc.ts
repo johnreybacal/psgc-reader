@@ -11,14 +11,6 @@ export interface PsgcRecord {
     status: string;
 }
 
-export class FilteredPsgc {
-    public regions: PsgcRecord[] = [];
-    public provinces: PsgcRecord[] = [];
-    public cities: PsgcRecord[] = [];
-    public municipalities: PsgcRecord[] = [];
-    public subMunicipalities: PsgcRecord[] = [];
-    public barangays: PsgcRecord[] = [];
-}
 export class Location {
     code: string;
     name: string;

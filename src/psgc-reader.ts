@@ -5,7 +5,7 @@ import Barangay from "./types/barangay";
 import City from "./types/city";
 import Municipality from "./types/municipality";
 import Province from "./types/province";
-import { FilteredPsgc, PsgcRecord } from "./types/psgc";
+import { PsgcRecord } from "./types/psgc";
 import Region from "./types/region";
 import SubMunicipality from "./types/subMunicipality";
 
@@ -71,7 +71,6 @@ export default class PsgcReader {
     #builder: LocationBuilder;
 
     #locations: PsgcRecord[] = [];
-    #filteredPSGC: FilteredPsgc = new FilteredPsgc();
     #regions: Region[] = [];
     #provinces: Province[] = [];
     #cities: City[] = [];
@@ -92,9 +91,6 @@ export default class PsgcReader {
 
     public get locations() {
         return this.#locations;
-    }
-    public get filteredPSGC() {
-        return this.#filteredPSGC;
     }
     public get regions() {
         return this.#regions;
@@ -183,38 +179,31 @@ export default class PsgcReader {
             this.#builder = new CompleteBuilder();
         }
 
-        const psgc = this.#filteredPSGC;
         const builder = this.#builder;
 
         this.#locations.forEach((location) => {
             switch (location.geoLevel) {
                 case REGION:
                     this.regions.push(builder.buildRegion(location));
-                    psgc.regions.push(location);
                     break;
                 case PROVINCE:
                     this.provinces.push(builder.buildProvince(location));
-                    psgc.provinces.push(location);
                     break;
                 case CITY:
                     this.cities.push(builder.buildCity(location));
-                    psgc.cities.push(location);
                     break;
                 case MUNICIPALITY:
                     this.municipalities.push(
                         builder.buildMunicipality(location)
                     );
-                    psgc.municipalities.push(location);
                     break;
                 case SUB_MUNICIPALITY:
                     this.subMunicipalities.push(
                         builder.buildSubMunicipality(location)
                     );
-                    psgc.subMunicipalities.push(location);
                     break;
                 case BARANGAY:
                     this.barangays.push(builder.buildBarangay(location));
-                    psgc.barangays.push(location);
                     break;
                 default:
                     // Some records does not have geo level
@@ -226,22 +215,18 @@ export default class PsgcReader {
                     // Is region level
                     if (location.code.endsWith("00000000")) {
                         this.regions.push(builder.buildRegion(location));
-                        psgc.regions.push(location);
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
                         this.provinces.push(builder.buildProvince(location));
-                        psgc.provinces.push(location);
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
                         this.cities.push(builder.buildCity(location));
-                        psgc.cities.push(location);
                     }
                     // Is barangay level
                     else {
                         this.barangays.push(builder.buildBarangay(location));
-                        psgc.barangays.push(location);
                     }
                     break;
             }
@@ -448,7 +433,6 @@ export default class PsgcReader {
 
     public reset() {
         this.#locations = [];
-        this.#filteredPSGC = new FilteredPsgc();
         this.#regions = [];
         this.#provinces = [];
         this.#cities = [];
