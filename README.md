@@ -5,13 +5,13 @@ A package for ingesting PSGC publication files
 ## Quickstart
 
 ```typescript
-import PsgcReader from "psgc-reader";
+import psgcReader from "psgc-reader";
 
-const result = await PsgcReader.instance.read(filePath);
+const result = await psgcReader.read(filePath);
 // result contains regions, provinces, cities, municipalities, subMunicipalities, and barangays that are associated with each other
 
-// if statistics columns are not needed
-const resultWithoutStatistics = await PsgcReader.instance.readWithoutStatistics(
+// if statistical columns are not needed
+const resultWithoutStatistics = await psgcReader.readWithoutStatistics(
     filePath
 );
 ```
@@ -19,10 +19,10 @@ const resultWithoutStatistics = await PsgcReader.instance.readWithoutStatistics(
 Or, just the raw data
 
 ```typescript
-import PsgcReader from "psgc-reader";
+import psgcReader, { PsgcRecord } from "psgc-reader";
 
-const result = await PsgcReader.instance.readRaw(filePath);
-// result is an array
+const resultRaw: PsgcRecord[] = await psgcReader.readRaw(filePath);
+// result is an array or records
 ```
 
 ## Or do it step by step
@@ -30,10 +30,7 @@ const result = await PsgcReader.instance.readRaw(filePath);
 ### 1. Import the package
 
 ```typescript
-import PsgcReader from "psgc-reader";
-
-// We only need one instance of the object
-const psgcReader = PsgcReader.instance;
+import psgcReader from "psgc-reader";
 ```
 
 ### 2. Read
@@ -52,7 +49,7 @@ console.log(psgcReader.locations);
 #### 2.1 Before filtering, select a builder
 
 ```typescript
-import PsgcReader, { BasicBuilder, CompleteBuilder } from "psgc-reader";
+import psgcReader, { BasicBuilder, CompleteBuilder } from "psgc-reader";
 
 // The BasicBuilder will omit statistical fields
 psgcReader.setBuilder(new BasicBuilder());
