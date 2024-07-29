@@ -1,5 +1,9 @@
 # psgc-reader
 
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/johnreybacal/psgc-reader/node.js.yml)
+![GitHub package.json dynamic](https://img.shields.io/github/package-json/version/johnreybacal/psgc-reader?label=npm&link=https%3A%2F%2Fwww.npmjs.com%2Fpackage%2Fpsgc-reader)
+![Codecov](https://img.shields.io/codecov/c/github/johnreybacal/psgc-reader)
+
 A package for ingesting PSGC publication files
 
 ## Quickstart

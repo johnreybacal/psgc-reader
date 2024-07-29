@@ -1,41 +1,42 @@
 {
-  "name": "psgc-reader",
-  "version": "1.0.10",
-  "description": "Reads a PSGC publicaton file",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/johnreybacal/psgc-reader.git"
-  },
-  "keywords": [
-    "psgc",
-    "philippines",
-    "region",
-    "province",
-    "city",
-    "barangay"
-  ],
-  "bugs": {
-    "url": "https://github.com/johnreybacal/psgc-reader/issues"
-  },
-  "homepage": "https://github.com/johnreybacal/psgc-reader#readme",
-  "author": "Johnrey Bacal",
-  "license": "ISC",
-  "dependencies": {
-    "read-excel-file": "^5.8.3"
-  },
-  "devDependencies": {
-    "@types/node": "^20.14.10",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.2.3",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.3"
-  },
-  "scripts": {
-    "test": "jest"
-  }
+    "name": "psgc-reader",
+    "version": "1.0.11",
+    "description": "Reads a PSGC publicaton file",
+    "main": "dist/index.js",
+    "typings": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/johnreybacal/psgc-reader.git"
+    },
+    "keywords": [
+        "psgc",
+        "philippines",
+        "region",
+        "province",
+        "city",
+        "barangay"
+    ],
+    "bugs": {
+        "url": "https://github.com/johnreybacal/psgc-reader/issues"
+    },
+    "homepage": "https://github.com/johnreybacal/psgc-reader#readme",
+    "author": "Johnrey Bacal",
+    "license": "ISC",
+    "dependencies": {
+        "read-excel-file": "^5.8.3"
+    },
+    "devDependencies": {
+        "@types/node": "^20.14.10",
+        "jest": "^29.7.0",
+        "ts-jest": "^29.2.3",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.5.3"
+    },
+    "scripts": {
+        "build": "tsc",
+        "test": "jest"
+    }
 }
