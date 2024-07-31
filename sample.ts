@@ -1,4 +1,3 @@
-import fs from "fs";
 import psgcReader from "./src";
 
 const test = async () => {
@@ -43,23 +42,9 @@ const test = async () => {
 
 const saveJson = async () => {
     const filePath = "./test/ncr_car_data.xlsx";
+    const destinationPath = "./data/sample.json";
 
-    // https://stackoverflow.com/a/11616993
-    const psgc = await psgcReader.read(filePath);
-
-    let cache: any[] = [];
-    let json = JSON.stringify(psgc.regions, (_, value) => {
-        if (typeof value === "object" && value !== null) {
-            // Duplicate reference found, discard key
-            if (cache.includes(value)) return;
-
-            // Store value in our collection
-            cache.push(value);
-        }
-        return value;
-    });
-
-    fs.writeFileSync("./data/sample.json", json);
+    await psgcReader.readToJson(filePath, destinationPath);
 
     process.exit(0);
 };

@@ -1,3 +1,4 @@
+import { writeFileSync } from "fs";
 import readXlsxFile from "read-excel-file/node";
 import { BasicBuilder, CompleteBuilder, LocationBuilder } from "./builder";
 import Logger from "./logger";
@@ -428,6 +429,35 @@ export default class PsgcReader {
             subMunicipalities: this.#subMunicipalities,
             barangays: this.#barangays,
         };
+    }
+
+    /**
+     * Converts a publication file into a json
+     * @param filePath publication file path
+     * @param destinationPath json path
+     * @param sheet sheet name
+     */
+    public async readToJson(
+        filePath: string,
+        destinationPath: string,
+        sheet = DEFAULT_SHEET_NAME
+    ) {
+        const { regions } = await this.read(filePath, sheet);
+
+        // https://stackoverflow.com/a/11616993
+        let cache: any[] = [];
+        let json = JSON.stringify(regions, (_, value) => {
+            if (typeof value === "object" && value !== null) {
+                // Duplicate reference found, discard key
+                if (cache.includes(value)) return;
+
+                // Store value in our collection
+                cache.push(value);
+            }
+            return value;
+        });
+
+        writeFileSync(destinationPath, json);
     }
 
     public reset() {
