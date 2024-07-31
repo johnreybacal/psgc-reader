@@ -1,3 +1,4 @@
+import fs from "fs";
 import psgcReader from "./src";
 
 const test = async () => {
@@ -40,4 +41,28 @@ const test = async () => {
     console.log(barangayCountByNameSorted.slice(0, 10));
 };
 
-test();
+const saveJson = async () => {
+    const filePath = "./test/ncr_car_data.xlsx";
+
+    // https://stackoverflow.com/a/11616993
+    const psgc = await psgcReader.read(filePath);
+
+    let cache: any[] = [];
+    let json = JSON.stringify(psgc.regions, (_, value) => {
+        if (typeof value === "object" && value !== null) {
+            // Duplicate reference found, discard key
+            if (cache.includes(value)) return;
+
+            // Store value in our collection
+            cache.push(value);
+        }
+        return value;
+    });
+
+    fs.writeFileSync("./data/sample.json", json);
+
+    process.exit(0);
+};
+
+// test();
+saveJson();

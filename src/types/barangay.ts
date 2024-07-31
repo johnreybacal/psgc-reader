@@ -5,5 +5,7 @@ import SubMunicipality from "./subMunicipality";
 
 export default class Barangay extends Location {
     urbanRuralClassification: string;
-    parent: City | Municipality | SubMunicipality;
+    city?: City;
+    municipality?: Municipality;
+    subMunicipality?: SubMunicipality;
 }

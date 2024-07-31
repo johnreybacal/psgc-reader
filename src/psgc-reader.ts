@@ -264,62 +264,68 @@ export default class PsgcReader {
                 province.code.startsWith(code.substring(0, 5))
             )[0];
         };
+        const compareCode = (
+            { code: code1 }: { code: string },
+            { code: code2 }: { code: string },
+            index: number
+        ) => {
+            return code1.substring(0, index) === code2.substring(0, index);
+        };
 
+        // Associate provinces to non-NCR
         const nonNcr = this.regions.filter(
             (region) => !region.code.startsWith(ncrCode)
         );
         nonNcr.forEach((region) => {
-            region.provinces = this.provinces.filter(
-                (province) =>
-                    province.code.substring(0, 2) ===
-                    region.code.substring(0, 2)
+            region.provinces = this.provinces.filter((province) =>
+                compareCode(province, region, 2)
             );
         });
 
+        // Associate cities and municipalities to NCR
         const ncr = this.regions.filter((region) =>
             region.code.startsWith(ncrCode)
         )[0];
-        ncr.cities = [];
-        ncr.municipalities = [];
+        ncr.cities = this.cities.filter((city) =>
+            city.code.startsWith(ncrCode)
+        );
+        ncr.municipalities = this.municipalities.filter((municipality) =>
+            municipality.code.startsWith(ncrCode)
+        );
 
         this.#logger.info("\tRegions associated");
 
+        // Associate region, cities, and municipalities to province
         this.provinces.forEach((province) => {
             province.region = getRegion(province.code);
 
-            province.cities = this.cities.filter(
-                (city) =>
-                    city.code.substring(0, 5) === province.code.substring(0, 5)
+            province.cities = this.cities.filter((city) =>
+                compareCode(city, province, 5)
             );
             province.municipalities = this.municipalities.filter(
-                (municipality) =>
-                    municipality.code.substring(0, 5) ===
-                    province.code.substring(0, 5)
+                (municipality) => compareCode(municipality, province, 5)
             );
         });
 
         this.#logger.info("\tProvinces associated");
 
+        // Associate region, provinces, subMunicipalities,  and barangays to city
         this.cities.forEach((city) => {
-            city.region = getRegion(city.code);
-
             city.province = getProvince(city.code);
 
-            if (city.code.startsWith(ncrCode)) {
-                // NCR
-                ncr.cities.push(city);
-                city.region = ncr;
+            // If city has no province, get region
+            // HUCs has no province, so we associate it to region
+            // HUCs also have subMunicipalities, or at least those in NCR
+            if (!city.province) {
+                city.region = getRegion(city.code);
 
-                if (city.code.startsWith(manilaCityCode)) {
-                    city.subMunicipalities = [...this.subMunicipalities];
-                    city.barangays = [];
-                    // Skip barangay if manila
-                    return;
-                }
+                city.subMunicipalities = this.subMunicipalities.filter(
+                    (subMunicipality) => compareCode(city, subMunicipality, 5)
+                );
             }
-            city.barangays = this.barangays.filter(
-                (barangay) =>
-                    barangay.code.substring(0, 7) === city.code.substring(0, 7)
+
+            city.barangays = this.barangays.filter((barangay) =>
+                compareCode(barangay, city, 7)
             );
         });
 
@@ -328,48 +334,41 @@ export default class PsgcReader {
         this.municipalities.forEach((municipality) => {
             municipality.province = getProvince(municipality.code);
 
-            municipality.barangays = this.barangays.filter(
-                (barangay) =>
-                    barangay.code.substring(0, 7) ===
-                    municipality.code.substring(0, 7)
-            );
-
-            if (municipality.code.startsWith(ncrCode)) {
-                ncr.municipalities.push(municipality);
-                municipality.region = ncr;
+            // If municipality has no province, get region
+            // It's probably Pateros in NCR
+            if (!municipality.province) {
+                municipality.region = getRegion(municipality.code);
             }
+
+            municipality.barangays = this.barangays.filter((barangay) =>
+                compareCode(barangay, municipality, 7)
+            );
         });
 
         this.#logger.info("\tMunicipalities associated");
 
         this.subMunicipalities.forEach((subMunicipality) => {
             subMunicipality.city = this.cities.filter((city) =>
-                city.code.startsWith("13806")
+                compareCode(subMunicipality, city, 5)
             )[0];
 
-            subMunicipality.barangays = this.barangays.filter(
-                (barangay) =>
-                    barangay.code.substring(0, 7) ===
-                    subMunicipality.code.substring(0, 7)
+            subMunicipality.barangays = this.barangays.filter((barangay) =>
+                compareCode(barangay, subMunicipality, 7)
             );
         });
 
         this.#logger.info("\tSubMunicipalities associated");
 
         this.barangays.forEach((barangay) => {
-            const parents = [
-                ...this.cities.filter((city) =>
-                    city.barangays.includes(barangay)
-                ),
-                ...this.municipalities.filter((municipality) =>
-                    municipality.barangays.includes(barangay)
-                ),
-                ...this.subMunicipalities.filter((subMunicipality) =>
-                    subMunicipality.barangays.includes(barangay)
-                ),
-            ];
-
-            barangay.parent = parents[0];
+            barangay.subMunicipality = this.subMunicipalities.filter(
+                (subMunicipality) => compareCode(barangay, subMunicipality, 7)
+            )[0];
+            barangay.municipality = this.municipalities.filter((municipality) =>
+                compareCode(barangay, municipality, 7)
+            )[0];
+            barangay.city = this.cities.filter((city) =>
+                compareCode(barangay, city, 7)
+            )[0];
         });
 
         this.#logger.info("\tBarangays associated");

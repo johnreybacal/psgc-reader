@@ -9,6 +9,6 @@ import Region from "./region";
 export default class Municipality extends Location {
     incomeClassification: string;
     region?: Region;
-    province: Province;
+    province?: Province;
     barangays: Barangay[] = [];
 }
