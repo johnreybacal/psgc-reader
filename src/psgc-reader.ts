@@ -216,18 +216,22 @@ export default class PsgcReader {
                     // Is region level
                     if (location.code.endsWith("00000000")) {
                         this.regions.push(builder.buildRegion(location));
+                        location.geoLevel = REGION;
                     }
                     // Is province level
                     else if (location.code.endsWith("00000")) {
                         this.provinces.push(builder.buildProvince(location));
+                        location.geoLevel = PROVINCE;
                     }
                     // Is city level
                     else if (location.code.endsWith("000")) {
                         this.cities.push(builder.buildCity(location));
+                        location.geoLevel = CITY;
                     }
                     // Is barangay level
                     else {
                         this.barangays.push(builder.buildBarangay(location));
+                        location.geoLevel = BARANGAY;
                     }
                     break;
             }
