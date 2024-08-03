@@ -29,6 +29,14 @@ const resultRaw: PsgcRecord[] = await psgcReader.readRaw(filePath);
 // result is an array or records
 ```
 
+Quickly convert the publication file into a json to inspect
+
+```typescript
+import psgcReader from "psgc-reader";
+
+await psgcReader.readToJson(filePath, jsonFilePath);
+```
+
 ## Or do it step by step
 
 ### 1. Import the package
