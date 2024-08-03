@@ -6,7 +6,7 @@ import Barangay from "./types/barangay";
 import City from "./types/city";
 import Municipality from "./types/municipality";
 import Province from "./types/province";
-import { PsgcRecord } from "./types/psgc";
+import { PsgcReaderResult, PsgcRecord } from "./types/psgc";
 import Region from "./types/region";
 import SubMunicipality from "./types/subMunicipality";
 
@@ -399,7 +399,10 @@ export default class PsgcReader {
      * @param filePath path to PSGC publication datafile
      * @param sheet defaults to PSGC
      */
-    public async read(filePath: string, sheet = DEFAULT_SHEET_NAME) {
+    public async read(
+        filePath: string,
+        sheet = DEFAULT_SHEET_NAME
+    ): Promise<PsgcReaderResult> {
         await this.readPublicationFile(filePath, sheet);
         this.filter().associate();
 
@@ -421,7 +424,7 @@ export default class PsgcReader {
     public async readWithoutStatistics(
         filePath: string,
         sheet = DEFAULT_SHEET_NAME
-    ) {
+    ): Promise<PsgcReaderResult> {
         await this.readPublicationFile(filePath, sheet);
         this.setBuilder(new BasicBuilder()).filter().associate();
 
